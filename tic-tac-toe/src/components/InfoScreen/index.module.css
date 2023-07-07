@@ -45,5 +45,9 @@
 }
 
 .bg1 {
-  background: linear-gradient(90deg, rgba(49,9,121,1) 0%, rgba(160,25,163,1) 67%, rgba(0,123,255,1) 100%)
+  background: linear-gradient(90deg, rgba(49,9,121,1) 0%, rgba(160,25,163,1) 67%, rgba(0,123,255,1) 100%);
+}
+
+.bg2 {
+  background: linear-gradient(90deg, rgba(176,0,37,1) 0%, rgba(176,32,18,1) 67%, rgba(117,0,255,1) 100%);
 }
