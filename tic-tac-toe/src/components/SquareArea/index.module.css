@@ -1,0 +1,9 @@
+.area {
+  min-width: 156px;
+  width: 156px;
+  max-width: 156px;
+  min-height: 156px;
+  height: 156px;
+  max-height: 156px;
+  flex-wrap: wrap;
+}

@@ -1,10 +1,11 @@
 import './App.css'
+import { SquareArea } from './components/SquareArea'
 
 export const App = () =>
 {
   return (
     <div className="App">
-      App
+      <SquareArea />
     </div>
   )
 }

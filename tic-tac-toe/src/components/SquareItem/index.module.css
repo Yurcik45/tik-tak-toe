@@ -1,0 +1,14 @@
+.item {
+  min-width: 50px;
+  width: 50px;
+  max-width: 50px;
+  min-height: 50px;
+  height: 50px;
+  max-height: 50px;
+  border: 1px solid black;
+}
+
+.acrossed {
+  border-radius: 15px;
+  border: 2px solid red;
+}

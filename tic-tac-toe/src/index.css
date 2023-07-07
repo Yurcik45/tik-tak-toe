@@ -7,6 +7,12 @@ body {
   margin: 0;
 }
 
+div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 main {
   display: block;
 }
