@@ -1,0 +1,41 @@
+.online, .offline {
+  border-radius: 50%;
+  height: 12px;
+  width: 12px;
+}
+
+.online {
+  background-color: green;
+}
+
+.offline {
+  background-color: brown;
+}
+
+.watch, .connect, .result {
+  cursor: pointer;
+}
+
+.watch {
+  background-color: rgb(221, 203, 39);
+}
+
+.watch:hover {
+  background-color: rgb(192, 173, 1);
+}
+
+.connect {
+  background-color: rgb(156, 222, 56);
+}
+
+.connect:hover {
+  background-color: rgb(121, 198, 6);
+}
+
+.result {
+  background-color: rgb(94, 97, 253);
+}
+
+.result:hover {
+  background-color: rgb(72, 75, 233);
+}
