@@ -15,9 +15,9 @@ END $$;
 CREATE TABLE IF NOT EXISTS battles (
   id SERIAL PRIMARY KEY,
   player1_name VARCHAR(100) NOT NULL,
-  is_player1_online BOOLEAN NOT NULL,
-  player2_name VARCHAR(100) NOT NULL,
-  is_player2_online BOOLEAN NOT NULL,
+  is_player1_online BOOLEAN NOT NULL DEFAULT true,
+  player2_name VARCHAR(100),
+  is_player2_online BOOLEAN NOT NULL DEFAULT false,
   game_status game_status NOT NULL,
   game_data JSONB NOT NULL DEFAULT '[
       {"symbol": null, "acrossed": false},
