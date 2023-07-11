@@ -12,14 +12,6 @@ const db_err_handling_hoc = func =>
   }
 }
 
-const make_db_query = (query) => db_err_handling_hoc(async func =>
-{
-  const { client, done } = await db_connect()
-  const result = await client.query(guery)
-  console.log('Rows:', result.rows)
-  done()
-})
-
 const db_connect = async () =>
 {
   const pool = new Pool({
@@ -57,102 +49,68 @@ const db_init = db_err_handling_hoc(async () =>
   done()
 })
 
-const get_all_battles = db_err_handling_hoc(async () =>
+const log_battle_rows = result =>
 {
-  const { client, done } = await db_connect()
-  const guery = 'SELECT * FROM battles'
-  const result = await client.query(guery)
-  console.log('Rows:', result.rows)
-  done()
-})
+  // Extract rows and remove PostgreSQL technical information
+  const rows = result.rows.map((row) => {
+    const { id, player1_name, is_player1_online, player2_name, is_player2_online, game_status, game_data } = row;
+    return { id, player1_name, is_player1_online, player2_name, is_player2_online, game_status, game_data };
+  });
 
-const get_one_battle = db_err_handling_hoc(async (id) =>
-{
-  console.log("getting battle with id", id)
-  const { client, done } = await db_connect()
-  const guery = `SELECT * FROM battles WHERE id=${id}`
-  console.log("before results", guery)
-  const result = await client.query(guery)
-  console.log("after results")
-  console.log('Rows:', result.rows)
-  done()
-})
+  console.table(rows);
+}
 
-const create_battle = db_err_handling_hoc(async (player1_name) =>
+const execute_query = async query =>
 {
-  const { client, done } = await db_connect()
-  const guery = `
+  const { client, done } = await db_connect();
+  const result = await client.query(query);
+  log_battle_rows(result)
+  done();
+}
+
+const game_query_builder = ({...params}) =>
+({
+  get_all: 'SELECT * FROM battles',
+  get_one: `SELECT * FROM battles WHERE id=${params.id}`,
+  create: `
     INSERT INTO battles (player1_name, game_status)
-    VALUES ('${player1_name}', 'search opponent')
+    VALUES ('${params.player1_name}', 'search opponent')
     RETURNING *
-  `
-  const result = await client.query(guery)
-  console.log('Rows:', result.rows)
-  done()
-})
-
-const start_battle = db_err_handling_hoc(async (id, player2_name) =>
-{
-  const { client, done } = await db_connect()
-  const guery = `
+  `,
+  start: `
     UPDATE battles
-    SET player2_name='${player2_name}', is_player2_online=true, game_status='running'
-    WHERE id=${id}
+    SET player2_name='${params.player2_name}', is_player2_online=true, game_status='running'
+    WHERE id=${params.id}
     RETURNING *
-  `
-  const result = await client.query(guery)
-  console.log('Rows:', result.rows)
-  done()
-})
-
-const patch_battle_status = db_err_handling_hoc(async (id, is_player1_online, is_player2_online, game_status) =>
-{
-  const { client, done } = await db_connect()
-  const guery = `
+  `,
+  update_status: `
     UPDATE battles
-    SET is_player1_online=${is_player1_online}, is_player2_online=${is_player2_online}, game_status='${game_status}'
-    WHERE id=${id}
+    SET is_player1_online=${params.is_player1_online}, is_player2_online=${params.is_player2_online}, game_status='${params.game_status}'
+    WHERE id=${params.id}
     RETURNING *
-  `
-  const result = await client.query(guery)
-  console.log('Rows:', result.rows)
-  done()
-})
-
-const patch_battle_data = db_err_handling_hoc(async (id, game_data) =>
-{
-  const { client, done } = await db_connect()
-  const guery = `
+  `,
+  update_data: `
     UPDATE battles
-    SET game_data='${JSON.stringify(game_data)}'
-    WHERE id=${id}
+    SET game_data='${JSON.stringify(params.game_data)}'
+    WHERE id=${params.id}
     RETURNING *
-  `
-  const result = await client.query(guery)
-  console.log('Rows:', result.rows)
-  done()
-})
-
-const delete_battle = db_err_handling_hoc(async (id) =>
-{
-  const { client, done } = await db_connect()
-  const guery = `
+  `,
+  delete: `
     DELETE FROM battles
-    WHERE id=${id}
+    WHERE id=${params.id}
     RETURNING *
   `
-  const result = await client.query(guery)
-  console.log('Rows:', result.rows)
-  done()
 })
+
+const execute_query_safety = db_err_handling_hoc(execute_query)
+
+const make_query = (query_type = "get_all", params = {}, custom = false, custom_query = "") =>
+{
+  console.log({ query_type, result_query: game_query_builder(params)[query_type]})
+  return execute_query_safety(custom ? custom_query : game_query_builder(params)[query_type])
+}
 
 module.exports = {
   db_init,
-  get_all_battles,
-  get_one_battle,
-  create_battle,
-  start_battle,
-  patch_battle_status,
-  patch_battle_data,
-  delete_battle,
+  make_query,
 }
