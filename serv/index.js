@@ -1,5 +1,8 @@
 const WS = require("ws")
 require('dotenv').config()
+const { db_init } = require('./db_queries')
+
+const init = async () => await db_init()
 
 const port = process.env['PORT']
 
@@ -16,3 +19,5 @@ wss.on('connection', (ws, req) => {
   ws.on('message', msg => console.log("message from user: ", JSON.parse(msg)))
   ws.on('close', () => console.log("user disconnected"))
 })
+
+init()

@@ -104,10 +104,11 @@ const game_query_builder = ({...params}) =>
 
 const execute_query_safety = db_err_handling_hoc(execute_query)
 
-const make_query = (query_type = "get_all", params = {}, custom = false, custom_query = "") =>
+const make_query = (query_type = "get_all", params = {}, castom = false, castom_query = "") =>
 {
-  console.log({ query_type, result_query: game_query_builder(params)[query_type]})
-  return execute_query_safety(custom ? custom_query : game_query_builder(params)[query_type])
+  const possible_query_types = Object.keys(game_query_builder({}))
+  if (castom === false && possible_query_types.indexOf(query_type) === -1) return
+  return execute_query_safety(castom ? castom_query : game_query_builder(params)[query_type])
 }
 
 module.exports = {
