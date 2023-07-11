@@ -2,35 +2,8 @@ import { ButtlesItem } from '../ButtlesItem'
 import s from './index.module.css'
 import b from '../buttles.module.css'
 
-export const ButtlesList = () =>
+export const ButtlesList = ({ battles_data, onStart }) =>
 {
-	const buttles = [
-		{
-			id: 5,
-			player1_name: "pl1",
-			is_player1_online: true,
-			player2_name: "pl2",
-			is_player2_online: false,
-			game_status: "search opponent", // "search opponent" "running" "finished"
-		},
-		{
-			id: 6,
-			player1_name: "pl11",
-			is_player1_online: true,
-			player2_name: "pl22",
-			is_player2_online: true,
-			game_status: "running",
-		},
-		{
-			id: 7,
-			player1_name: "pl111",
-			is_player1_online: true,
-			player2_name: "pl222",
-			is_player2_online: true,
-			game_status: "finished",
-		},
-	]
-
 	const generate_action = buttle =>
 	{
 		if (buttle.game_status === "running") return "watch"
@@ -39,6 +12,12 @@ export const ButtlesList = () =>
 		if (buttle.game_status === "finished") return "result"
 		return "no actions"
 	}
+
+	const NoBattle = () =>
+	<div className={ s.container }>
+		<div className={ s.text }>No buttles found, you can init first!</div>
+		<button className={ s.button } onClick={onStart}>Send request</button>
+	</div>
 
 	return (
 		<div className={ s.list }>
@@ -51,9 +30,9 @@ export const ButtlesList = () =>
 				<div className={ b.status + " " + s.status }>game status</div>
 				<div className={ b.status + " " + s.status }>action</div>
 			</div>
-			{ buttles.length > 0
-			  	? buttles.map(buttle => <ButtlesItem key={ buttle.id } { ...{ ...buttle, action: generate_action(buttle) } } />)
-					: <div className={ s.no_buttle }>No buttles found, you can init first!</div>
+			{ battles_data.length > 0
+			  	? battles_data.map(buttle => <ButtlesItem key={ buttle.id } { ...{ ...buttle, action: generate_action(buttle) } } />)
+					: <NoBattle />
 			}
 		</div>
 	)
