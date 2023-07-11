@@ -2,15 +2,7 @@ const fs = require('fs')
 const { Pool } = require('pg')
 const util = require('util')
 const readFileAsync = util.promisify(fs.readFile)
-
-// HOC for error handling
-const db_err_handling_hoc = func =>
-{
-  return async (...args) => {
-    try { await func(...args) } 
-    catch (err) { console.error('Error:', err) }
-  }
-}
+const {  db_err_handling_hoc, log_battle_rows, game_query_builder } = require('./tools')
 
 const db_connect = async () =>
 {
@@ -49,66 +41,23 @@ const db_init = db_err_handling_hoc(async () =>
   done()
 })
 
-const log_battle_rows = result =>
-{
-  // Extract rows and remove PostgreSQL technical information
-  const rows = result.rows.map((row) => {
-    const { id, player1_name, is_player1_online, player2_name, is_player2_online, game_status, game_data } = row;
-    return { id, player1_name, is_player1_online, player2_name, is_player2_online, game_status, game_data };
-  });
-
-  console.table(rows);
-}
-
 const execute_query = async query =>
 {
   const { client, done } = await db_connect();
   const result = await client.query(query);
-  log_battle_rows(result)
+  // log_battle_rows(result)
   done();
+  return result
 }
-
-const game_query_builder = ({...params}) =>
-({
-  get_all: 'SELECT * FROM battles',
-  get_one: `SELECT * FROM battles WHERE id=${params.id}`,
-  create: `
-    INSERT INTO battles (player1_name, game_status)
-    VALUES ('${params.player1_name}', 'search opponent')
-    RETURNING *
-  `,
-  start: `
-    UPDATE battles
-    SET player2_name='${params.player2_name}', is_player2_online=true, game_status='running'
-    WHERE id=${params.id}
-    RETURNING *
-  `,
-  update_status: `
-    UPDATE battles
-    SET is_player1_online=${params.is_player1_online}, is_player2_online=${params.is_player2_online}, game_status='${params.game_status}'
-    WHERE id=${params.id}
-    RETURNING *
-  `,
-  update_data: `
-    UPDATE battles
-    SET game_data='${JSON.stringify(params.game_data)}'
-    WHERE id=${params.id}
-    RETURNING *
-  `,
-  delete: `
-    DELETE FROM battles
-    WHERE id=${params.id}
-    RETURNING *
-  `
-})
 
 const execute_query_safety = db_err_handling_hoc(execute_query)
 
-const make_query = (query_type = "get_all", params = {}, castom = false, castom_query = "") =>
+const make_query = async (query_type = "get_all", params = {}, castom = false, castom_query = "") =>
 {
+  console.log("make_query", { query_type, params, castom, castom_query })
   const possible_query_types = Object.keys(game_query_builder({}))
   if (castom === false && possible_query_types.indexOf(query_type) === -1) return
-  return execute_query_safety(castom ? castom_query : game_query_builder(params)[query_type])
+  return await execute_query_safety(castom ? castom_query : game_query_builder(params)[query_type])
 }
 
 module.exports = {
