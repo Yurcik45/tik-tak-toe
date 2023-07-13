@@ -29,13 +29,47 @@ const ws_message_handler = (ws, name, message) =>
   console.log("===== ws_message_handler =====")
   console.log({name, message})
   console.log("===== ===== ===== ===== =====")
-  switch (message) {
+  switch (message.title) {
     case "start":
       make_query("create", { player1_name: name })
       .then(() =>
       {
         ws.send(JSON.stringify({ title: "created", msg: "battle was created" }))
         console.log("after sending msg in case start")
+      })
+      break
+    case "step":
+      console.log("STEP CASE", message)
+      wss.clients.forEach(client => console.log("client origin: ", client.origin ))
+      make_query("get_one", { id: message.battle_id })
+      .then(battles =>
+      {
+        console.log("battles when get in step")
+        log_battle_rows(battles)
+        make_query("update_data", { id: message.battle_id, game_data: message.data, last_step_player: name })
+        .then(updated_battle =>
+        {
+          console.log("updated battle in step case: ")
+          log_battle_rows(updated_battle)
+          wss.clients.forEach(client =>
+          {
+            const data = updated_battle.rows[0]
+            if (data.player1_name === client.origin || data.player2_name === client.origin) client.send(JSON.stringify({ title: "step", battle: updated_battle.rows[0] }))
+          })
+        })
+      })
+      break
+    case "restart":
+      
+      break
+    case "connect":
+      const { id, player2_name } = message
+      make_query("start", { id, player2_name })
+      .then(result =>
+      {
+        console.log("connect db results ====:")
+        log_battle_rows(result)
+        ws.send(JSON.stringify({ title: "connect", battle: result.rows[0] }))
       })
       break
     case "test":
@@ -52,10 +86,13 @@ wss.on('connection', (ws, req) => {
   const origin = raw_headers[raw_headers.indexOf('Origin') + 1]
   console.log("request from: ", origin)
   ws.isAlive = true
+  ws.origin = origin
   ws.on('error', console.error)
   ws.send(JSON.stringify({ title: "hello", msg: `hello, ${origin}!` }))
   ws.on('message', msg => ws_message_handler(ws, origin, JSON.parse(msg)))
   ws.on('close', () => console.log("user disconnected"))
 })
+
+
 
 init()
