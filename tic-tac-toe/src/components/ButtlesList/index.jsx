@@ -1,8 +1,9 @@
+import { v4 as uuid } from 'uuid'
 import { ButtlesItem } from '../ButtlesItem'
 import s from './index.module.css'
 import b from '../buttles.module.css'
 
-export const ButtlesList = ({ battles_data, onStart }) =>
+export const ButtlesList = ({ battles_data, onStart, send_want_to_connect }) =>
 {
 	const generate_action = buttle =>
 	{
@@ -31,7 +32,12 @@ export const ButtlesList = ({ battles_data, onStart }) =>
 				<div className={ b.status + " " + s.status }>action</div>
 			</div>
 			{ battles_data.length > 0
-			  	? battles_data.map(buttle => <ButtlesItem key={ buttle.id } { ...{ ...buttle, action: generate_action(buttle) } } />)
+			  	? battles_data.map(buttle =>
+						<ButtlesItem
+							key={ uuid() }
+							{ ...{ ...buttle, action: generate_action(buttle) } }
+							send_want_to_connect={send_want_to_connect}
+						/>)
 					: <NoBattle />
 			}
 		</div>
