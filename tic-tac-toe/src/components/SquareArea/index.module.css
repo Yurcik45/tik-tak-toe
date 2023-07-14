@@ -16,6 +16,8 @@
   height: 156px;
   max-height: 156px;
   flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between
 }
 
 .label {
