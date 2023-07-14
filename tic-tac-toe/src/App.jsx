@@ -97,12 +97,42 @@ export const App = () =>
 
   return (
     <div className="App">
-      { game_part !== "start" && game_part !== "list" && <InfoScreen
-        label={ game_part === "error" ? "something went wrong :(" : game_part == "init" ? "tic tac toe online" : "one more time?" }
-        action={() => { game_part === "error" ? window.navigation.reload() : set_game_part("list") }}
-        action_label={ game_part === "error" ? "reset game" : game_part == "init" ? "start game" : "restart game" }
-        background={ game_part === "error" ? "bg2" : game_part === "init" ? "bg1" : null }
-      /> }
+      { game_part === "init" && <InfoScreen
+          label="tic tac toe online"
+          actions={[{
+            action: () => set_game_part("list"),
+            label: "start game"
+          }]}
+          background="bg1"
+        />
+      }
+      { game_part === "finish" && <InfoScreen
+          label="one more time?"
+          actions={[
+            {
+              action: () => set_game_part("start"),
+              label: "restart game"
+            },
+            {
+              action: () => set_game_part("list"),
+              label: "go to battles"
+            },
+            {
+              action: () => set_game_part("init"),
+              label: "exit"
+            }
+          ]}
+        />
+      }
+      { game_part === "error" && <InfoScreen
+          label="something went wrong :("
+          actions={[{
+            action: () => window.navigation.reload(),
+            label: "reset game"
+          }]}
+          background="bg2"
+        />
+      }
       { game_part === "list" &&
         <ButtlesList
           battles_data={battles_data}
