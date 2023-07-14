@@ -5,10 +5,18 @@
   min-height: 50px;
   height: 50px;
   max-height: 50px;
-  border: 1px solid black;
+  outline: 1px solid black;
 }
 
 .acrossed {
   border-radius: 15px;
-  border: 2px solid red;
+  outline: 2px solid red;
+}
+
+.true_hover:hover {
+  background-color: rgba(255, 0, 0, 0.331);
+}
+
+.false_hover:hover {
+  background-color: rgba(0, 255, 64, 0.331);
 }
