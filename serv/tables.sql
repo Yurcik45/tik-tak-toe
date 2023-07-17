@@ -14,12 +14,12 @@ BEGIN
     RAISE NOTICE 'Type symbol already exists';
   END IF;
   
-  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'acrossed_type') THEN
-    CREATE TYPE acrossed_type AS ENUM ('none', 'horizontal', 'vertical', 'across', 'across_reverse');
-    RAISE NOTICE 'Type acrossed_type created successfully';
-  ELSE
-    RAISE NOTICE 'Type acrossed_type already exists';
-  END IF;
+  -- IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'acrossed_type') THEN
+  --   CREATE TYPE acrossed_type AS ENUM ('none', 'horizontal', 'vertical', 'across', 'across_reverse');
+  --   RAISE NOTICE 'Type acrossed_type created successfully';
+  -- ELSE
+  --   RAISE NOTICE 'Type acrossed_type already exists';
+  -- END IF;
 END $$;
 
 
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS battles (
   -- general
   last_step_player VARCHAR(100),
   game_status game_status NOT NULL,
-  across acrossed_type NOT NULL DEFAULT 'none',
+  across BOOLEAN NOT NULL DEFAULT false,
   game_data JSONB NOT NULL DEFAULT '[
       {"id": 0,"symbol": null, "acrossed": false},
       {"id": 1,"symbol": null, "acrossed": false},
