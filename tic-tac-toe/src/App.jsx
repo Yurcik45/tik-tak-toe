@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import './App.css'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { InfoScreen } from './components/InfoScreen'
 import { SquareArea } from './components/SquareArea'
 import { ButtlesList } from './components/ButtlesList'
 import { get_all_battles } from './requests'
+import './App.css'
 
 const myWs = new WebSocket('ws://localhost:9000')
 
@@ -16,6 +18,8 @@ export const App = () =>
   const [is_it_first_player, set_is_it_first_player] = useState(null)
   const [battle_id, set_battle_id] = useState(null)
   const [symbol, set_symbol] = useState(null)
+
+  const notify = (type = "info", msg = "Wow so easy!") => toast[type](msg)
 
   console.group("=== App states ===")
   console.log("game_part: ", game_part)
@@ -148,6 +152,11 @@ export const App = () =>
           symbol={symbol}
         />
       }
+      <ToastContainer
+        position="bottom-right" autoClose={5000} hideProgressBar={false}
+        newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss
+        draggable pauseOnHover theme="light"
+      />
     </div>
   )
 }
