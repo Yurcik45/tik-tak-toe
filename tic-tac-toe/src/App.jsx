@@ -4,10 +4,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import { InfoScreen } from './components/InfoScreen'
 import { SquareArea } from './components/SquareArea'
 import { ButtlesList } from './components/ButtlesList'
-import { get_all_battles } from './requests'
+import { serv_host, get_all_battles } from './requests'
 import './App.css'
 
-const myWs = new WebSocket('ws://192.168.88.76:9000')
+const myWs = new WebSocket(`ws://${serv_host}:9000`)
 
 export const App = () =>
 {
@@ -32,7 +32,7 @@ export const App = () =>
     return battles
   }
 
-  myWs.onopen = () => { console.log('connected to WS'); notify("success", "connected to game network") }
+  myWs.onopen = () => { console.log('connected to WS'); notify("success", "started successfull") }
   myWs.onmessage = msg => ws_message_handler(JSON.parse(msg.data))
   myWs.onerror = err =>
   {
@@ -59,7 +59,10 @@ export const App = () =>
     case "leave":
       get_battles()
       set_game_part("list")
-      notify(message.msg)
+      notify("warning", message.msg)
+      break
+    case "hello":
+      notify("success", "connected to game network")
       break
     default: console.warn("no messages yet"); break;
   }
@@ -86,6 +89,15 @@ export const App = () =>
     if (battle_data.last_step_player === origin) return notify("info", "it's not your turn now")
     console.log("battle data in make step", data)
     myWs.send(JSON.stringify({ title: "step", battle_data, game_data: data }))
+  }
+
+  const set_winner = game_data =>
+  {
+    set_battle_data({ ...battle_data, game_data })
+    const winner_symbol = game_data.find(data => data.acrossed).symbol
+    const winner_name = battle_data.player1_symbol === winner_symbol ? battle_data.player1_name : battle_data.player2_name
+    notify("success", `winner is: ${winner_name === origin ? "YOU" : winner_name}`)
+    send_finish_game(game_data)
   }
 
   return (
@@ -137,7 +149,7 @@ export const App = () =>
         <SquareArea
           game_data={battle_data.game_data}
           set_game_part={ set_game_part }
-          send_finish_game={ send_finish_game }
+          set_winner={ set_winner }
           make_step={make_step}
           notify={notify}
           symbol={battle_data.player1_name === origin ? battle_data.player1_symbol : battle_data.player2_symbol}
@@ -146,7 +158,7 @@ export const App = () =>
       <ToastContainer
         position="bottom-right" autoClose={5000} hideProgressBar={false}
         newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss
-        draggable pauseOnHover theme="light"
+        draggable pauseOnHover theme="light" className="toast_container"
       />
     </div>
   )

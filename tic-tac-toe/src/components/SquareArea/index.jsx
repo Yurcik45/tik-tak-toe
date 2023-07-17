@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { SquareItem } from '../SquareItem'
 import s from './index.module.css'
 
-export const SquareArea = ({ game_data, set_game_part, make_step, symbol, send_finish_game, notify }) =>
+export const SquareArea = ({ game_data, set_game_part, make_step, symbol, set_winner, notify }) =>
 {
   const item_click = (item_id, is_symbol) =>
   {
@@ -30,14 +30,14 @@ export const SquareArea = ({ game_data, set_game_part, make_step, symbol, send_f
 
   const check_acrossed = () =>
   {
+    const is_acrossed = game_data.find(item => item.acrossed)
+    if (is_acrossed) return
     const steps_count = game_data.filter(item => item.symbol !== null).length
     if (steps_count < 5) return
     const winner_ids = check_winner()
     if (winner_ids.length === 0) return
-    notify("success", "winner is: ", game_data[winner_ids[0]].symbol)
-    const battle_accrossed = game_data.map(battle => winner_ids.indexOf(battle.id) !== -1 ? ({ ...battle, accrossed: true }) : battle)
-    send_finish_game(battle_accrossed)
-    // set_game_part("finish")
+    const battle_acrossed = game_data.map(battle => winner_ids.indexOf(battle.id) !== -1 ? ({ ...battle, acrossed: true }) : battle)
+    set_winner(battle_acrossed)
   }
 
   useEffect(check_acrossed, [game_data])

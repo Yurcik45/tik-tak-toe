@@ -15,13 +15,13 @@ app.get("/battles", async (req, res) => {
   res.status(200).json(data.rows);
 });
 
-app.listen(5000, "192.168.88.76", () =>
+app.listen(process.env['SERV_PORT'] ?? 5000, process.env['SERV_HOST'] ?? "localhost", () =>
   console.log("serv started on port 5000")
 );
 
 const init = async () => await db_init();
 
-const port = process.env["PORT"];
+const port = process.env["WS_PORT"];
 
 const wss = new WS.Server({ port }, () =>
   console.log(`SERV: websocket started on port: ${port}`)
