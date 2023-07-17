@@ -7,23 +7,20 @@ import { ButtlesList } from './components/ButtlesList'
 import { get_all_battles } from './requests'
 import './App.css'
 
-const myWs = new WebSocket('ws://localhost:9000')
+const myWs = new WebSocket('ws://192.168.88.76:9000')
 
 export const App = () =>
 {
   const [game_part, set_game_part] = useState("init") // "list" "start" "finish" "error"
   const [battles_data, set_battles_data] = useState([])
   const [battle_data, set_battle_data] = useState(null)
-  const [block_step, set_block_step] = useState(false)
-  const [is_it_first_player, set_is_it_first_player] = useState(null)
-  const [battle_id, set_battle_id] = useState(null)
-  const [symbol, set_symbol] = useState(null)
+
+  const origin = window.location.origin
 
   const notify = (type = "info", msg = "Wow so easy!") => toast[type](msg)
 
   console.group("=== App states ===")
   console.log("game_part: ", game_part)
-  console.log({ block_step, is_it_first_player, battle_id, symbol })
   console.log("battle_data: ", battle_data)
   console.log("battleS_data: ", battles_data)
   console.groupEnd()
@@ -35,76 +32,68 @@ export const App = () =>
     return battles
   }
 
-  myWs.onopen = () => { console.log('connected to WS') }
+  myWs.onopen = () => { console.log('connected to WS'); notify("success", "connected to game network") }
   myWs.onmessage = msg => ws_message_handler(JSON.parse(msg.data))
+  myWs.onerror = err =>
+  {
+    console.warn("ws error", err)
+    notify("error", "websocket connection error")
+    set_game_part("error")
+  }
 
   const ws_message_handler = message =>
   {
     console.log("=== ws_message_handler ===", message)
     const { title } = message
     switch (title) {
-      case "created": get_battles(); break;
-      case "connected":
-        set_game_part("start")
-        set_battle_data(message.battle)
+      case "game_created":
+        if (game_part !== "list") break
+        get_battles()
         break
-      case "step": setup_particular_battle_info(message.battle); break;
-      case "hello": console.log(message); break;
-      case "test": console.log(message); break;
-      default: console.log("no messages yet"); break;
-    }
+      case "game_started":
+        set_battle_data(message.battle_data)
+        set_game_part("start")
+        if (message.new_user_name !== origin) notify("success", `opponent ${message.new_user_name} connected`)
+        break
+    case "step": set_battle_data(message.battle); break;
+    case "leave":
+      get_battles()
+      set_game_part("list")
+      notify(message.msg)
+      break
+    default: console.warn("no messages yet"); break;
   }
+}
 
   const send_want_to_start = async () =>
   {
-    myWs.send(JSON.stringify({ title: "start" }))
+    myWs.send(JSON.stringify({ title: "create_game" }))
+    set_game_part("list")
   }
 
   const send_want_to_connect = battle_id =>
   {
-    myWs.send(JSON.stringify({ title: "connect", id: battle_id, player2_name: window.location.origin }))
+    myWs.send(JSON.stringify({ title: "connect_to_battle", id: battle_id, player2_name: origin }))
   }
 
-  const setup_particular_battle_info = battle =>
+  const send_finish_game = updated_battle_data =>
   {
-    const { id, last_step_player, player1_name, player1_symbol, player2_symbol, game_data } = battle
-    set_battle_id(id)
-    set_block_step(last_step_player === origin)
-    const is_it_player1 = player1_name === origin
-    set_is_it_first_player(is_it_player1)
-    set_symbol(is_it_player1 ? player1_symbol : player2_symbol)
-    set_battle_data(game_data)
-  }
-
-  const check_player_already_have_game = battles =>
-  {
-    const origin = window.location.origin
-    const filtered = (battles ?? battles_data).filter(battle => battle.player1_name === origin || battle.player2_name === origin)
-    if (filtered.length === 0) return false
-    setup_particular_battle_info(filtered[0])
-    return true
+    myWs.send(JSON.stringify({ title: "finish_game", id: battle_data.id, game_data: updated_battle_data }))
   }
 
   const make_step = data =>
   {
+    if (battle_data.last_step_player === origin) return notify("info", "it's not your turn now")
     console.log("battle data in make step", data)
-    myWs.send(JSON.stringify({ title: "step", player: window.location.origin, data, battle_id }))
+    myWs.send(JSON.stringify({ title: "step", battle_data, game_data: data }))
   }
-
-  useEffect(() =>
-  {
-    if (game_part === "list")
-    {
-      get_battles().then(battles => check_player_already_have_game(battles) && set_game_part("start"))
-    }
-  }, [game_part])
 
   return (
     <div className="App">
       { game_part === "init" && <InfoScreen
           label="tic tac toe online"
           actions={[{
-            action: () => set_game_part("list"),
+            action: () => { set_game_part("list"); get_battles() },
             label: "start game"
           }]}
           background="bg1"
@@ -146,10 +135,12 @@ export const App = () =>
       }
       { game_part === "start" && battle_data &&
         <SquareArea
-          battle_data={battle_data}
+          game_data={battle_data.game_data}
           set_game_part={ set_game_part }
+          send_finish_game={ send_finish_game }
           make_step={make_step}
-          symbol={symbol}
+          notify={notify}
+          symbol={battle_data.player1_name === origin ? battle_data.player1_symbol : battle_data.player2_symbol}
         />
       }
       <ToastContainer
