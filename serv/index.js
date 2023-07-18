@@ -38,6 +38,31 @@ const check_rows_case = (res, message) => {
   return true;
 };
 
+const handle_exit_case = origin =>
+{
+  // get battle via on eof players name
+  make_query("get_one_by_name", { name: origin }).then((res) => {
+    if (!check_rows_case(res, { title: "general get_one_by_name" })) return;
+    make_query("delete", { id: res.rows[0].id }).then((del_res) => {
+      if (!check_rows_case(del_res, { title: "general delete" })) return;
+      wss.clients.forEach((client) => {
+        const ws_origin = client.origin;
+        const battle_data = del_res.rows[0];
+        const { player1_name, player2_name } = battle_data;
+        if ((ws_origin !== origin) && (player1_name === ws_origin || player2_name === ws_origin)) {
+          client.send(
+            JSON.stringify({
+              title: "leave",
+              msg: `player ${origin} is leave, game is finished, you win!`,
+            })
+          );
+        }
+      });
+    });
+  });
+  console.log("user disconnected");
+}
+
 const ws_message_handler = (ws, name, message) => {
   console.log("===== ws_message_handler =====");
   console.log({ name, message });
@@ -105,6 +130,9 @@ const ws_message_handler = (ws, name, message) => {
         });
       });
       break;
+    case "want_to_exit":
+      handle_exit_case(message.origin)
+      break
     case "finish_game":
       const { id, game_data } = message;
       make_query("finish", { id, game_data }).then((res) => {
@@ -125,29 +153,7 @@ wss.on("connection", (ws, req) => {
   ws.on("error", console.error);
   ws.send(JSON.stringify({ title: "hello", msg: `hello, ${origin}!` }));
   ws.on("message", (msg) => ws_message_handler(ws, origin, JSON.parse(msg)));
-  ws.on("close", () => {
-    // get battle via on eof players name
-    make_query("get_one_by_name", { name: origin }).then((res) => {
-      if (!check_rows_case(res, { title: "general get_one_by_name" })) return;
-      make_query("delete", { id: res.rows[0].id }).then((del_res) => {
-        if (!check_rows_case(del_res, { title: "general delete" })) return;
-        wss.clients.forEach((client) => {
-          const ws_origin = client.origin;
-          const battle_data = del_res.rows[0];
-          const { player1_name, player2_name } = battle_data;
-          if (player1_name === ws_origin || player2_name === ws_origin) {
-            client.send(
-              JSON.stringify({
-                title: "leave",
-                msg: `player ${ws_origin} is leave, game is finished, you win!`,
-              })
-            );
-          }
-        });
-      });
-    });
-    console.log("user disconnected");
-  });
+  ws.on("close", () => handle_exit_case(origin));
 });
 
 init();
