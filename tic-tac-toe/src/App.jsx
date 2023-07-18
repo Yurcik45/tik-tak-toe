@@ -84,9 +84,11 @@ export const App = () =>
     myWs.send(JSON.stringify({ title: "want_to_exit", origin }))
   }
 
-  const send_finish_game = updated_battle_data =>
+  const send_finish_game = () =>
   {
-    myWs.send(JSON.stringify({ title: "finish_game", id: battle_data.id, game_data: updated_battle_data }))
+    myWs.send(JSON.stringify({ title: "finish_game", id: battle_data.id }))
+    battle_data(null)
+    battles_data([])
   }
 
   const make_step = data =>
@@ -102,7 +104,7 @@ export const App = () =>
     const winner_symbol = game_data.find(data => data.acrossed).symbol
     const winner_name = battle_data.player1_symbol === winner_symbol ? battle_data.player1_name : battle_data.player2_name
     notify("success", `winner is: ${winner_name === origin ? "YOU" : winner_name}`)
-    send_finish_game(game_data)
+    send_finish_game()
     const tm = setTimeout(() => { set_game_part("finish"); clearTimeout(tm) }, 2000)
   }
 
@@ -120,10 +122,10 @@ export const App = () =>
       { game_part === "finish" && <InfoScreen
           label="one more time?"
           actions={[
-            {
-              action: () => set_game_part("start"),
-              label: "restart game"
-            },
+            // {
+            //   action: () => set_game_part("start"),
+            //   label: "restart game"
+            // },
             {
               action: () => set_game_part("list"),
               label: "go to battles"
@@ -148,6 +150,7 @@ export const App = () =>
         <ButtlesList
           battles_data={battles_data}
           onStart={send_want_to_start}
+          notify={notify}
           send_want_to_connect={send_want_to_connect}
         />
       }

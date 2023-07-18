@@ -3,14 +3,20 @@ import { ButtlesItem } from '../ButtlesItem'
 import s from './index.module.css'
 import b from '../buttles.module.css'
 
-export const ButtlesList = ({ battles_data, onStart, send_want_to_connect }) =>
+export const ButtlesList = ({ battles_data, onStart, notify, send_want_to_connect }) =>
 {
-	const generate_action = buttle =>
+	const origin = window.location.origin
+
+	const generate_action = battle =>
 	{
-		if (buttle.game_status === "running") return "watch"
-		if (buttle.game_status === "search opponent") return "connect"
-		if (buttle.game_status === "finished") return "result"
-		return "no actions"
+		if (battle.game_status === "search opponent" && battle.player1_name === origin) return {
+			action: "waiting",
+			onClick: () => notify("info", "wait to somebody connect")
+		}
+		if (battle.game_status === "search opponent") return {
+			action: "connect",
+			onClick: send_want_to_connect
+		}
 	}
 
 	const NoBattle = () =>
@@ -19,7 +25,6 @@ export const ButtlesList = ({ battles_data, onStart, send_want_to_connect }) =>
 		<button className={ s.button } onClick={onStart}>Send request</button>
 	</div>
 
-	const origin = window.location.origin
 
 	return (
 		<div className={ s.list }>
@@ -34,8 +39,7 @@ export const ButtlesList = ({ battles_data, onStart, send_want_to_connect }) =>
 			  	? battles_data.map(battle =>
 						<ButtlesItem
 							key={ uuid() }
-							{ ...{ ...battle, action: generate_action(battle) } }
-							send_want_to_connect={ origin === battle.player1_name || origin === battle.player2_name ? () => {} : send_want_to_connect}
+							{ ...{ ...battle, ...generate_action(battle) } }
 						/>)
 					: <NoBattle />
 			}
