@@ -134,10 +134,10 @@ const ws_message_handler = (ws, name, message) => {
       handle_exit_case(message.origin)
       break
     case "finish_game":
-      const { id, game_data } = message;
-      make_query("finish", { id, game_data }).then((res) => {
-        if (!check_rows_case(res, message)) return;
-        console.log("game finished OK");
+      const { id } = message;
+      make_query("delete", { id }).then((del_res) => {
+        if (!check_rows_case(del_res, { title: "finish delete" })) return;
+        console.log("===finish deleting successfull")
       });
     default:
       break;
