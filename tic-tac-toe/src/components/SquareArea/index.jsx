@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { SquareItem } from '../SquareItem'
 import s from './index.module.css'
 
-export const SquareArea = ({ game_data, set_game_part, make_step, symbol, set_winner, notify }) =>
+export const SquareArea = ({ game_data, make_step, send_user_exit, symbol, set_winner, notify }) =>
 {
   const item_click = (item_id, is_symbol) =>
   {
@@ -48,7 +48,7 @@ export const SquareArea = ({ game_data, set_game_part, make_step, symbol, set_wi
       <div className={ s.area }>
         { game_data.map((item, id) => <SquareItem  key={ uuid() } id={ id } { ...item } onClick={ item_click } />) }
       </div>
-      <button className={ s.button } onClick={() => { set_game_part("init") }}>exit</button>
+      <button className={ s.button } onClick={send_user_exit}>exit</button>
     </div>
   )
 }

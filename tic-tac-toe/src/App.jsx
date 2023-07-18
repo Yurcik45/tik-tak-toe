@@ -79,6 +79,11 @@ export const App = () =>
     myWs.send(JSON.stringify({ title: "connect_to_battle", id: battle_id, player2_name: origin }))
   }
 
+  const send_user_exit = () =>
+  {
+    myWs.send(JSON.stringify({ title: "want_to_exit", origin }))
+  }
+
   const send_finish_game = updated_battle_data =>
   {
     myWs.send(JSON.stringify({ title: "finish_game", id: battle_data.id, game_data: updated_battle_data }))
@@ -98,6 +103,7 @@ export const App = () =>
     const winner_name = battle_data.player1_symbol === winner_symbol ? battle_data.player1_name : battle_data.player2_name
     notify("success", `winner is: ${winner_name === origin ? "YOU" : winner_name}`)
     send_finish_game(game_data)
+    const tm = setTimeout(() => { set_game_part("finish"); clearTimeout(tm) }, 2000)
   }
 
   return (
@@ -148,10 +154,10 @@ export const App = () =>
       { game_part === "start" && battle_data &&
         <SquareArea
           game_data={battle_data.game_data}
-          set_game_part={ set_game_part }
           set_winner={ set_winner }
           make_step={make_step}
           notify={notify}
+          send_user_exit={send_user_exit}
           symbol={battle_data.player1_name === origin ? battle_data.player1_symbol : battle_data.player2_symbol}
         />
       }
