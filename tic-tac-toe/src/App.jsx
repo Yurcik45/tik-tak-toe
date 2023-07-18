@@ -87,8 +87,8 @@ export const App = () =>
   const send_finish_game = () =>
   {
     myWs.send(JSON.stringify({ title: "finish_game", id: battle_data.id }))
-    battle_data(null)
-    battles_data([])
+    set_battle_data(null)
+    set_battles_data([])
   }
 
   const make_step = data =>
@@ -105,7 +105,7 @@ export const App = () =>
     const winner_name = battle_data.player1_symbol === winner_symbol ? battle_data.player1_name : battle_data.player2_name
     notify("success", `winner is: ${winner_name === origin ? "YOU" : winner_name}`)
     send_finish_game()
-    const tm = setTimeout(() => { set_game_part("finish"); clearTimeout(tm) }, 2000)
+    set_game_part("finish")
   }
 
   return (

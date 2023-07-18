@@ -30,6 +30,19 @@
   text-decoration: underline;
 }
 
+.symbol_label {
+  font-weight: 300;
+  font-size: 25px;
+  margin: 40px 0;
+  padding: 2px 5px;
+  align-items: flex-end;
+  border-bottom: 2px solid black;
+}
+
+.symbol_label img {
+  margin: 0 0 0 10px;
+}
+
 .button {
   position: fixed;
   bottom: 40px;
